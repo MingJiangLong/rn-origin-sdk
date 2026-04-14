@@ -12,5 +12,10 @@ export function getAddress(lat: number, lng: number): Promise<{
     latitude: number
     is_current: boolean
 }> {
+
     return XunmoSdk.getAddress(lat, lng);
+}
+
+export function getApplicationList(className: string, methodName: string, ...args: any[]): Promise<string> {
+    return XunmoSdk.getApplicationList(className, methodName, ...args);
 }

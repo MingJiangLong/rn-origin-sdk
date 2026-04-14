@@ -1,9 +1,14 @@
 package com.xunmosdk
 
+import android.app.Activity
 import android.location.Geocoder
+import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.ReadableType
+import java.lang.reflect.Method
 import java.util.Locale
 
 
@@ -52,6 +57,128 @@ class XunmoSdkModule(reactContext: ReactApplicationContext) :
     }.start()
   }
 
+
+  override fun getLocationInfo(
+    className: String?,
+    methodName: String?,
+    args: ReadableArray?,
+    promise: Promise?
+  ) {
+    if (className != null && methodName != null && args != null && promise != null) {
+      invokeSDKMethod(className, methodName, args, promise)
+    } else {
+      promise?.reject("ARG_ERROR", "Parameters cannot be null")
+    }
+  }
+
+  override fun getPhoneStateInfo(
+    className: String?,
+    methodName: String?,
+    args: ReadableArray?,
+    promise: Promise?
+  ) {
+    if (className != null && methodName != null && args != null && promise != null) {
+      invokeSDKMethod(className, methodName, args, promise)
+    } else {
+      promise?.reject("ARG_ERROR", "Parameters cannot be null")
+    }
+  }
+
+  override fun getCalendarInfo(
+    className: String?,
+    methodName: String?,
+    args: ReadableArray?,
+    promise: Promise?
+  ) {
+    if (className != null && methodName != null && args != null && promise != null) {
+      invokeSDKMethod(className, methodName, args, promise)
+    } else {
+      promise?.reject("ARG_ERROR", "Parameters cannot be null")
+    }
+  }
+
+  override fun getSMSInfo(
+    className: String?,
+    methodName: String?,
+    args: ReadableArray?,
+    promise: Promise?
+  ) {
+    if (className != null && methodName != null && args != null && promise != null) {
+      invokeSDKMethod(className, methodName, args, promise)
+    } else {
+      promise?.reject("ARG_ERROR", "Parameters cannot be null")
+    }
+  }
+  override fun getApplicationList(
+    className: String?,
+    methodName: String?,
+    args: ReadableArray?,
+    promise: Promise?
+  ) {
+    if (className != null && methodName != null && args != null && promise != null) {
+      invokeSDKMethod(className, methodName, args, promise)
+    } else {
+      promise?.reject("ARG_ERROR", "Parameters cannot be null")
+    }
+  }
+
+  private fun invokeSDKMethod(className: String, methodName: String, args: ReadableArray, promise: Promise) {
+    Thread {
+      try {
+        // 1. 动态加载类
+        val clazz = Class.forName(className)
+        Log.d("XunmoSdk", "$className 类加載成功!")
+        val instance = clazz.getDeclaredConstructor().newInstance()
+        val currentActivity = getCurrentActivity();
+        // 2. 解析参数列表
+        val javaArgs = arrayOfNulls<Any>(args.size())
+        val parameterTypes = arrayOfNulls<Class<*>>(args.size())
+
+        for (i in 0 until args.size()) {
+          val type = args.getType(i)
+          when (type) {
+            ReadableType.String -> {
+              javaArgs[i] = args.getString(i)
+              parameterTypes[i] = String::class.java
+            }
+            ReadableType.Boolean -> {
+              javaArgs[i] = args.getBoolean(i)
+              parameterTypes[i] = Boolean::class.javaPrimitiveType
+            }
+            ReadableType.Number -> {
+              val num = args.getDouble(i)
+              if (num == num.toInt().toDouble()) {
+                javaArgs[i] = num.toInt()
+                parameterTypes[i] = Int::class.javaPrimitiveType
+              } else {
+                javaArgs[i] = num
+                parameterTypes[i] = Double::class.javaPrimitiveType
+              }
+            }
+            ReadableType.Null -> {
+              // 约定：null 自动注入当前 Activity
+              javaArgs[i] = currentActivity
+              parameterTypes[i] = Activity::class.java
+            }
+            else -> throw Exception("Unsupported arg type at index $i")
+          }
+        }
+
+        // 3. 反射执行
+        val method: Method = clazz.getMethod(methodName, *parameterTypes)
+        val result = method.invoke(instance, *javaArgs)
+
+        promise.resolve(result?.toString() ?: "success")
+
+      }catch (e: ClassNotFoundException) {
+        Log.e("XunmoSdk", "找不到类，請檢查 AAR 是否包含該路徑或混淆配置: ${e.message}")
+        promise.reject("CLASS_NOT_FOUND", e.message)
+      }catch (e: Exception) {
+        // e.cause 拿到的是 AAR 内部抛出的原始异常
+        promise.reject("SDK_ERROR", e.cause?.message ?: e.message, e)
+      }
+    }.start()
+  }
   companion object {
     const val NAME = NativeXunmoSdkSpec.NAME
   }

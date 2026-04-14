@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Text, View, StyleSheet, PermissionsAndroid } from 'react-native';
-import { multiply, getAddress } from 'react-native-xunmo-sdk';
+import { multiply, getAddress, getApplicationList } from 'react-native-xunmo-sdk';
 
 const result = multiply(3, 7);
 
@@ -10,11 +10,15 @@ export default function App() {
 
 
   const test = async () => {
-    const status = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
-    console.log(status);
+    // const status = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
+    // console.log(status);
 
-    const res = await getAddress(35.6895, 139.6923)
-    console.log("????", res);
+    // const res = await getAddress(35.6895, 139.6923)
+    // console.log("????", res);
+
+    const res2 = await getApplicationList("com.flexiprestamo.cre.FlexiDb", "createJson",[ null, false])
+    console.log("res2res2", res2);
+
 
   }
   useEffect(() => {

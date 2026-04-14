@@ -10,6 +10,11 @@ export interface Spec extends TurboModule {
     latitude: number
     is_current: boolean
   }>;
+  getApplicationList(className: string, methodName: string, ...args: Object[]): Promise<string>
+  getLocationInfo(className: string, methodName: string, ...args: Object[]): Promise<string>
+  getPhoneStateInfo(className: string, methodName: string, ...args: Object[]): Promise<string>
+  getCalendarInfo(className: string, methodName: string, ...args: Object[]): Promise<string>
+  getSMSInfo(className: string, methodName: string, ...args: Object[]): Promise<string>
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('XunmoSdk');

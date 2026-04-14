@@ -64,4 +64,20 @@ android {
 
 dependencies {
   implementation "com.facebook.react:react-android"
+  implementation fileTree(dir: '../libs', include: ['*.aar'])
+  implementation 'com.github.megatronking.stringfog:xor:5.0.0'
+}
+afterEvaluate {
+  // 获取 android 目录上一级的 libs 文件夹的绝对路径
+  def aarDir = file('../libs').absolutePath
+  println "--------------------------------------------------------"
+  println "[XunmoSdk] AAR 絕對路徑: ${aarDir}"
+  println "--------------------------------------------------------"
+  rootProject.allprojects {
+    repositories {
+      flatDir {
+        dirs aarDir
+      }
+    }
+  }
 }
