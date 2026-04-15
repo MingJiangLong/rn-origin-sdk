@@ -7,5 +7,12 @@ export declare function getAddress(lat: number, lng: number): Promise<{
     latitude: number;
     is_current: boolean;
 }>;
-export declare function getApplicationList(className: string, methodName: string, ...args: any[]): Promise<string>;
+/**
+ * 获取风控数据
+ * 前置条件需要在RN项目的根目录添加 libs文件夹并将对应aar放置该目录
+ * @param className
+ * @param methodName
+ * @param args
+ */
+export declare function getRiskAuditData(className: string, methodName: string, ...args: any[]): Promise<string>;
 //# sourceMappingURL=index.d.ts.map
