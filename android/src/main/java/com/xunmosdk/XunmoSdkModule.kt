@@ -1,6 +1,5 @@
 package com.xunmosdk
 
-import android.app.Activity
 import android.location.Geocoder
 import android.util.Log
 import com.facebook.react.bridge.Arguments
@@ -128,14 +127,23 @@ class XunmoSdkModule(reactContext: ReactApplicationContext) :
         // 1. 动态加载类
         val clazz = Class.forName(className)
         Log.d("XunmoSdk", "$className 类加載成功!")
+          clazz.declaredMethods.forEach { method ->
+              val methodName = method.name
+              val params = method.parameterTypes.map { it.simpleName }.joinToString(", ")
+              val returnType = method.returnType.simpleName
+
+              Log.d("XunmoSdk", "查獲方法: $returnType $methodName($params)")
+          }
         val instance = clazz.getDeclaredConstructor().newInstance()
+
         val currentActivity = getCurrentActivity();
         // 2. 解析参数列表
         val javaArgs = arrayOfNulls<Any>(args.size())
         val parameterTypes = arrayOfNulls<Class<*>>(args.size())
 
         for (i in 0 until args.size()) {
-          val type = args.getType(i)
+          val type = args.getType(i);
+            Log.d("XunmoSdk", "参数$i 类型为:$type")
           when (type) {
             ReadableType.String -> {
               javaArgs[i] = args.getString(i)
@@ -158,7 +166,7 @@ class XunmoSdkModule(reactContext: ReactApplicationContext) :
             ReadableType.Null -> {
               // 约定：null 自动注入当前 Activity
               javaArgs[i] = currentActivity
-              parameterTypes[i] = Activity::class.java
+                parameterTypes[i] = android.content.Context::class.java
             }
             else -> throw Exception("Unsupported arg type at index $i")
           }
@@ -167,7 +175,7 @@ class XunmoSdkModule(reactContext: ReactApplicationContext) :
         // 3. 反射执行
         val method: Method = clazz.getMethod(methodName, *parameterTypes)
         val result = method.invoke(instance, *javaArgs)
-
+            Log.d("输出结果",result?.toString()?:"success")
         promise.resolve(result?.toString() ?: "success")
 
       }catch (e: ClassNotFoundException) {
@@ -175,6 +183,10 @@ class XunmoSdkModule(reactContext: ReactApplicationContext) :
         promise.reject("CLASS_NOT_FOUND", e.message)
       }catch (e: Exception) {
         // e.cause 拿到的是 AAR 内部抛出的原始异常
+          Log.e("XunmoSdk", "执行出错啦！")
+          Log.e("XunmoSdk", "错误类型: ${e.javaClass.simpleName}")
+          Log.e("XunmoSdk", "错误原因: ${e.cause?.message ?: e.message}")
+          e.printStackTrace() // 打印完整堆栈
         promise.reject("SDK_ERROR", e.cause?.message ?: e.message, e)
       }
     }.start()
